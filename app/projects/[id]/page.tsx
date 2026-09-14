@@ -2,71 +2,158 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowRight, Box, CheckCircle2, FileText, Home, LayoutDashboard, MapPinned, Ruler, ShieldCheck, Sparkles } from 'lucide-react';
+import styles from './page.module.css';
 
-type Project = { id:string; name:string; location:string; type:string; updated:string };
-type Site = { address?:string; lat?:number|null; lon?:number|null; width:number; depth:number; analysis?:any };
-const PROJECTS='build-ai:projects:v1';
-const MODEL='build-ai:building-model:v3';
+type Project = { id: string; name: string; location: string; type: string; updated: string };
+type Site = { address?: string; lat?: number | null; lon?: number | null; width: number; depth: number; analysis?: Record<string, unknown> };
+type ModelSummary = { version?: number; rooms?: unknown[] };
+
+const PROJECTS = 'build-ai:projects:v1';
+const MODEL = 'build-ai:building-model:v3';
+const heroImage = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85';
+const siteImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80';
+
 const steps = [
-  ['site','Site Intelligence','Resolve jurisdiction, planning context and site evidence.',MapPinned,'/projects/new/site','Understand your property'],
-  ['feasibility','Feasibility','Evaluate the buildable envelope and regulatory evidence.',Ruler,'/projects/new/envelope','Know what is possible'],
-  ['design','2D Architecture','Edit the persistent floor-plan geometry.',LayoutDashboard,'/projects/new/architecture','Create intelligent plans'],
-  ['3d','3D Model','Inspect the same building model in 3D.',Box,'/projects/new/3d','Visualize your building'],
-  ['interior','Interior','Develop rooms, furniture and finishes.',Home,'/projects/new/interior','Shape living spaces'],
-  ['documents','Documents','Generate evidence-backed project documentation.',FileText,'/projects/new/documents','Prepare project reports'],
+  ['site', 'Site Intelligence', 'Resolve jurisdiction, planning context and site evidence.', MapPinned, '/projects/new/site', 'Understand your property'],
+  ['feasibility', 'Feasibility', 'Evaluate the buildable envelope and regulatory evidence.', Ruler, '/projects/new/envelope', 'Know what is possible'],
+  ['design', '2D Architecture', 'Edit the persistent floor-plan geometry.', LayoutDashboard, '/projects/new/architecture', 'Create intelligent plans'],
+  ['3d', '3D Model', 'Inspect the same building model in 3D.', Box, '/projects/new/3d', 'Visualize your building'],
+  ['interior', 'Interior', 'Develop rooms, furniture and finishes.', Home, '/projects/new/interior', 'Shape living spaces'],
+  ['documents', 'Documents', 'Generate evidence-backed project documentation.', FileText, '/projects/new/documents', 'Prepare project reports'],
 ] as const;
 
-const heroImage='https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85';
-const siteImage='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80';
+export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const [project, setProject] = useState<Project | null>(null);
+  const [site, setSite] = useState<Site | null>(null);
+  const [model, setModel] = useState<ModelSummary | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function ProjectPage({params}:{params:Promise<{id:string}>}) {
- const [project,setProject]=useState<Project|null>(null); const [site,setSite]=useState<Site|null>(null);
- useEffect(()=>{params.then(p=>{try{const all=JSON.parse(localStorage.getItem(PROJECTS)||'[]');const found=all.find((x:Project)=>x.id===p.id)||null;setProject(found);setSite(JSON.parse(localStorage.getItem(`build-ai:site:${p.id}:v1`)||'null'));localStorage.setItem('build-ai:active-project:v1',p.id);}catch{}})},[params]);
- const model = typeof window!=='undefined' ? (()=>{try{return JSON.parse(localStorage.getItem(MODEL)||'null')}catch{return null}})() : null;
- const analysis=site?.analysis;
- const projectId=project?.id||'';
- return <main className="projectHome">
-  <style jsx global>{`
-   .projectHome{min-height:100vh;background:#f5f9fd;color:#102b4c;font-family:Arial,Helvetica,sans-serif}.projectHome *{box-sizing:border-box}.projectHome a{text-decoration:none;color:inherit}
-   .phNav{height:76px;background:#fff;border-bottom:1px solid #e1eaf3;display:flex;align-items:center;padding:0 clamp(20px,5vw,72px);gap:32px;position:sticky;top:0;z-index:20}.phBrand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0d3765;min-width:210px}.phBrand svg{width:42px;height:42px}.phBrand strong{display:block;font-size:22px;line-height:1}.phBrand small{display:block;font-size:9px;margin-top:4px;color:#61768d;font-weight:700}.phNavLinks{display:flex;gap:26px;align-items:center;font-size:12px;font-weight:700;color:#60748a}.phNavLinks a:first-child{color:#1469c5;border-bottom:2px solid #1469c5;padding:29px 0}.phNavAction{margin-left:auto;display:flex;align-items:center;gap:12px}.phNew{background:#0e5fb5;color:#fff!important;border-radius:9px;padding:12px 17px;font-weight:800;font-size:12px}.phBack{font-size:12px;font-weight:700;color:#5e7186}.phBody{max-width:1240px;margin:0 auto;padding:42px 28px 80px}.phEyebrow{display:flex;gap:8px;align-items:center;color:#2477c9;font-size:10px;letter-spacing:.18em;font-weight:900}.phTitleRow{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:10px}.phTitleRow h1{font-size:clamp(34px,4vw,56px);letter-spacing:-.05em;line-height:.98;margin:0;color:#092a50}.phSub{font-size:14px;color:#667b91;margin:12px 0 0;line-height:1.5}.phStatus{display:flex;align-items:center;gap:8px;background:#edf9f2;border:1px solid #ccebd9;border-radius:999px;padding:9px 13px;color:#267044;font-size:11px;font-weight:800;white-space:nowrap}.phStatus i{width:7px;height:7px;background:#2ea45f;border-radius:50%;display:block}.phHero{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;margin-top:30px}.phHeroCard{min-height:310px;background:#fff;border:1px solid #dce7f2;border-radius:18px;overflow:hidden;position:relative}.phHeroImage{width:100%;height:100%;min-height:310px;object-fit:cover;display:block}.phHeroOverlay{position:absolute;inset:auto 18px 18px 18px;background:#ffffffeb;border:1px solid #dbe7f1;border-radius:13px;padding:14px;display:flex;justify-content:space-between;gap:18px;box-shadow:0 10px 30px #173f6720}.phHeroOverlay strong{font-size:14px}.phHeroOverlay span{display:block;color:#6b7d91;font-size:10px;margin-top:5px}.phMetrics{display:grid;grid-template-columns:1fr 1fr;gap:14px}.phMetric{background:#fff;border:1px solid #dce7f2;border-radius:16px;padding:20px;position:relative;overflow:hidden}.phMetric:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:#eaf4ff;right:-40px;top:-45px}.phMetric label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#71859a;font-weight:800}.phMetric strong{display:block;font-size:26px;color:#0d4f91;margin-top:9px}.phMetric p{font-size:11px;color:#71859a;line-height:1.45;margin:7px 0 0}.phSitePreview{grid-column:1/-1;height:150px;border-radius:16px;overflow:hidden;position:relative}.phSitePreview img{width:100%;height:100%;object-fit:cover;filter:saturate(.85)}.phSiteLabel{position:absolute;left:14px;top:14px;background:#ffffffef;border-radius:9px;padding:8px 11px;font-size:10px;font-weight:800;display:flex;align-items:center;gap:6px}.phSiteLabel svg{color:#1470c8}.phSummary{margin-top:20px;background:#fff;border:1px solid #dce7f2;border-radius:16px;padding:18px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:0}.phSummary div{padding:2px 18px;border-right:1px solid #e5edf4}.phSummary div:first-child{padding-left:0}.phSummary div:last-child{border:0}.phSummary span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#788ba0;font-weight:800}.phSummary strong{display:block;margin-top:6px;font-size:15px;color:#163e66}.phSection{margin-top:42px}.phSectionHead{text-align:center}.phSectionLabel{font-size:10px;letter-spacing:.2em;color:#4e82b5;font-weight:900}.phSection h2{font-size:30px;letter-spacing:-.035em;margin:9px 0 7px;color:#0b2d51}.phSectionIntro{font-size:12px;color:#71849a;margin:0}.phWorkflow{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:26px}.phStep{background:#fff;border:1px solid #dce7f2;border-radius:15px;padding:16px;min-height:190px;position:relative;transition:transform .18s,box-shadow .18s,border-color .18s}.phStep:hover{transform:translateY(-3px);box-shadow:0 12px 30px #164a7520;border-color:#b9d5ed}.phStepIcon{height:46px;width:46px;border-radius:11px;background:#f0f6fc;display:grid;place-items:center;color:#0c5fae}.phStepNo{position:absolute;right:12px;top:14px;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#126bc2;color:#fff;font-size:10px;font-weight:900}.phStep:nth-child(2) .phStepNo{background:#2d9b52}.phStep:nth-child(3) .phStepNo{background:#7a42d8}.phStep:nth-child(4) .phStepNo{background:#ef7519}.phStep:nth-child(5) .phStepNo{background:#dc277a}.phStep:nth-child(6) .phStepNo{background:#15898d}.phStep h3{font-size:14px;margin:16px 0 7px;color:#153b62}.phStep p{font-size:10px;line-height:1.5;color:#75879a;margin:0}.phStepFoot{position:absolute;bottom:14px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;color:#1469c5;font-size:9px;font-weight:800}.phProof{margin-top:26px;background:#eef6fd;border:1px solid #dceaf6;border-radius:16px;display:grid;grid-template-columns:repeat(4,1fr);padding:19px}.phProof div{text-align:center;border-right:1px solid #cfe0ee}.phProof div:last-child{border:0}.phProof strong{display:block;font-size:22px;color:#0b559c}.phProof span{display:block;font-size:10px;color:#6e8195;margin-top:4px}.phEvidence{margin-top:26px;background:#fff;border:1px solid #dce7f2;border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:20px}.phEvidenceText{display:flex;gap:12px;align-items:flex-start}.phEvidenceText svg{color:#239a5b;flex:none}.phEvidenceText strong{display:block;font-size:12px}.phEvidenceText span{display:block;font-size:10px;color:#74879a;line-height:1.5;margin-top:4px}.phOpen{display:inline-flex;align-items:center;gap:8px;background:#0d5eaf;color:#fff!important;padding:12px 15px;border-radius:9px;font-size:11px;font-weight:800;white-space:nowrap}.phFooterCta{margin-top:42px;border-radius:18px;background:linear-gradient(100deg,#073767,#1164a8);color:#fff;padding:30px;display:flex;justify-content:space-between;align-items:center;gap:25px;overflow:hidden;position:relative}.phFooterCta:after{content:"";position:absolute;right:-80px;top:-110px;width:360px;height:360px;border:1px solid #ffffff30;border-radius:50%;box-shadow:0 0 0 30px #ffffff08,0 0 0 60px #ffffff05}.phFooterCta h2{font-size:25px;margin:0 0 7px}.phFooterCta p{font-size:11px;color:#d5e6f7;margin:0}.phFooterCta a{position:relative;z-index:1;background:#fff;color:#0a4d88!important;padding:12px 17px;border-radius:9px;font-size:11px;font-weight:900;white-space:nowrap}
-   @media(max-width:1000px){.phNavLinks{display:none}.phHero{grid-template-columns:1fr}.phWorkflow{grid-template-columns:repeat(3,1fr)}.phSummary{grid-template-columns:repeat(2,1fr);gap:14px}.phSummary div{border:0;padding:8px 0}.phFooterCta{align-items:flex-start;flex-direction:column}.phNav{padding:0 20px}.phBody{padding:30px 18px 60px}}
-   @media(max-width:640px){.phNav{height:66px}.phBrand{min-width:0}.phBrand svg{width:35px;height:35px}.phBrand strong{font-size:19px}.phBrand small{font-size:8px}.phNavAction .phBack{display:none}.phTitleRow{display:block}.phStatus{display:inline-flex;margin-top:16px}.phBody{padding-top:27px}.phHeroCard,.phHeroImage{min-height:250px}.phMetrics{grid-template-columns:1fr 1fr}.phMetric{padding:15px}.phMetric strong{font-size:21px}.phSitePreview{height:125px}.phWorkflow{grid-template-columns:1fr 1fr}.phStep{min-height:175px}.phProof{grid-template-columns:1fr 1fr;gap:12px}.phProof div{border:0}.phSummary{padding:14px}.phEvidence{align-items:flex-start;flex-direction:column}.phOpen{width:100%;justify-content:center}}
-  `}</style>
-  <header className="phNav">
-   <a href="/dashboard" className="phBrand" aria-label="Build Ai dashboard"><HouseLogo/><span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span></a>
-   <nav className="phNavLinks"><a href={`/projects/${projectId}`}>Project</a><a href={`/projects/new/site?project=${projectId}`}>Site</a><a href={`/projects/new/envelope?project=${projectId}`}>Feasibility</a><a href={`/projects/new/architecture?project=${projectId}`}>2D</a><a href={`/projects/new/3d?project=${projectId}`}>3D</a><a href={`/projects/new/interior?project=${projectId}`}>Interior</a></nav>
-   <div className="phNavAction"><a className="phBack" href="/dashboard">Dashboard</a><a className="phNew" href="/projects/new">New Project</a></div>
-  </header>
+  useEffect(() => {
+    let active = true;
+    params.then(({ id }) => {
+      if (!active) return;
+      try {
+        const projects = JSON.parse(localStorage.getItem(PROJECTS) || '[]') as Project[];
+        const found = projects.find((item) => item.id === id) || null;
+        const savedSite = JSON.parse(localStorage.getItem(`build-ai:site:${id}:v1`) || 'null') as Site | null;
+        const savedModel = JSON.parse(localStorage.getItem(MODEL) || 'null') as ModelSummary | null;
+        setProject(found);
+        setSite(savedSite);
+        setModel(savedModel);
+        localStorage.setItem('build-ai:active-project:v1', id);
+      } catch {
+        setProject(null);
+        setSite(null);
+        setModel(null);
+      } finally {
+        setLoading(false);
+      }
+    }).catch(() => setLoading(false));
+    return () => { active = false; };
+  }, [params]);
 
-  <section className="phBody">
-   <div className="phEyebrow"><Sparkles size={13}/> PROJECT WORKSPACE</div>
-   <div className="phTitleRow"><div><h1>{project?.name || 'Building project'}</h1><p className="phSub">{project?.location || 'Location pending'} · {project?.type || 'Residential'} · Your complete building workflow</p></div><div className="phStatus"><i/> Workspace ready</div></div>
+  if (loading) return <main className={styles.loading}>Loading project workspace…</main>;
 
-   <div className="phHero">
-    <div className="phHeroCard"><img className="phHeroImage" src={heroImage} alt="Modern residential building concept"/><div className="phHeroOverlay"><div><strong>Design Preview</strong><span>AI-ready residential concept</span></div><Box size={20}/></div></div>
-    <div className="phMetrics">
-     <div className="phMetric"><label>Building model</label><strong>{model ? `v${model.version}` : '—'}</strong><p>Persistent source of truth across 2D and 3D.</p></div>
-     <div className="phMetric"><label>Rooms</label><strong>{model?.rooms?.length ?? 0}</strong><p>Editable spaces in the current model.</p></div>
-     <div className="phMetric"><label>Site area</label><strong>{site ? `${(site.width*site.depth).toFixed(1)} m²` : '—'}</strong><p>{site ? `${site.width}m × ${site.depth}m plot` : 'Add site dimensions'}</p></div>
-     <div className="phMetric"><label>Evidence</label><strong>{analysis && Object.keys(analysis.evidence||{}).length ? 'Ready' : 'Review'}</strong><p>Regulatory values stay evidence-gated.</p></div>
-     <div className="phSitePreview"><img src={siteImage} alt="Residential site and landscape context"/><div className="phSiteLabel"><MapPinned size={13}/> Site Context</div></div>
-    </div>
-   </div>
+  if (!project) {
+    return <main className={styles.page}><section className={styles.body}><div className={styles.empty}><h1>Project not found</h1><p>The project may have been created on another device or browser.</p><a href="/dashboard">Return to dashboard</a></div></section></main>;
+  }
 
-   <div className="phSummary"><div><span>Planning context</span><strong>{analysis?.planningSource || project?.location || 'Pending'}</strong></div><div><span>Coordinates</span><strong>{site?.lat!=null&&site?.lon!=null ? `${site.lat}, ${site.lon}` : 'Not supplied'}</strong></div><div><span>Spatial evidence</span><strong>{analysis && Object.keys(analysis.evidence||{}).length ? 'Resolved' : 'Further review'}</strong></div><div><span>Regulatory posture</span><strong>Evidence-gated</strong></div></div>
+  const analysis = site?.analysis || {};
+  const evidence = analysis.evidence as Record<string, unknown> | undefined;
+  const evidenceReady = Boolean(evidence && Object.keys(evidence).length);
+  const projectId = project.id;
+  const siteArea = site && Number.isFinite(site.width) && Number.isFinite(site.depth) ? site.width * site.depth : null;
+  const planningContext = typeof analysis.planningSource === 'string' ? analysis.planningSource : project.location;
 
-   <section className="phSection">
-    <div className="phSectionHead"><div className="phSectionLabel">COMPLETE WORKFLOW</div><h2>Everything You Need to Build Smarter</h2><p className="phSectionIntro">Move from site intelligence to design, visualization and documentation in one workspace.</p></div>
-    <div className="phWorkflow">{steps.map(([key,title,desc,Icon,href,caption],i)=><a key={key} href={`${href}?project=${projectId}`} className="phStep"><div className="phStepIcon"><Icon size={22}/></div><div className="phStepNo">{i+1}</div><h3>{title}</h3><p>{desc}</p><div className="phStepFoot"><span>{caption}</span><ArrowRight size={14}/></div></a>)}</div>
-   </section>
+  return (
+    <main className={styles.page}>
+      <header className={styles.nav}>
+        <a href="/dashboard" className={styles.brand} aria-label="Build Ai dashboard">
+          <HouseLogo />
+          <span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span>
+        </a>
+        <nav className={styles.navLinks} aria-label="Project navigation">
+          <a href={`/projects/${projectId}`}>Project</a>
+          <a href={`/projects/new/site?project=${projectId}`}>Site</a>
+          <a href={`/projects/new/envelope?project=${projectId}`}>Feasibility</a>
+          <a href={`/projects/new/architecture?project=${projectId}`}>2D</a>
+          <a href={`/projects/new/3d?project=${projectId}`}>3D</a>
+          <a href={`/projects/new/interior?project=${projectId}`}>Interior</a>
+        </nav>
+        <div className={styles.navActions}><a className={styles.back} href="/dashboard">Dashboard</a><a className={styles.newProject} href="/projects/new">New Project</a></div>
+      </header>
 
-   <div className="phProof"><div><strong>10x</strong><span>Faster Planning</span></div><div><strong>100%</strong><span>Regulation Aware</span></div><div><strong>36</strong><span>States & UTs in data core</span></div><div><strong>1</strong><span>Persistent Building Model</span></div></div>
+      <section className={styles.body}>
+        <div className={styles.eyebrow}><Sparkles size={13} /> PROJECT WORKSPACE</div>
+        <div className={styles.titleRow}>
+          <div><h1>{project.name}</h1><p className={styles.subtitle}>{project.location} · {project.type} · Your complete building workflow</p></div>
+          <div className={styles.status}><span className={styles.statusDot} /> Workspace ready</div>
+        </div>
 
-   {site&&<div className="phEvidence"><div className="phEvidenceText"><ShieldCheck size={19}/><div><strong>Evidence-aware site context</strong><span>{analysis?.note || 'Site context has been stored with the project. Local authority and regulatory conclusions remain subject to verified source resolution.'}</span></div></div><a className="phOpen" href={`/projects/new/site?project=${projectId}`}>Review Site Intelligence <ArrowRight size={14}/></a></div>}
+        <div className={styles.hero}>
+          <div className={styles.heroCard}>
+            <img className={styles.heroImage} src={heroImage} alt="Modern residential building concept" loading="eager" onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }} />
+            <div className={styles.heroOverlay}><div><strong>Design Preview</strong><span>AI-ready concept workspace</span></div><Box size={20} /></div>
+          </div>
+          <div className={styles.metrics}>
+            <Metric label="Building model" value={model?.version ? `v${model.version}` : '—'} text="Persistent source of truth across 2D and 3D." />
+            <Metric label="Rooms" value={String(model?.rooms?.length ?? 0)} text="Editable spaces in the current model." />
+            <Metric label="Site area" value={siteArea !== null ? `${siteArea.toFixed(1)} m²` : '—'} text={site ? `${site.width}m × ${site.depth}m plot` : 'Add site dimensions'} />
+            <Metric label="Evidence" value={evidenceReady ? 'Ready' : 'Review'} text="Regulatory values remain evidence-gated." />
+            <div className={styles.sitePreview}>
+              <img src={siteImage} alt="Residential site and landscape context" loading="lazy" onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }} />
+              <div className={styles.siteLabel}><MapPinned size={13} /> Site Context</div>
+            </div>
+          </div>
+        </div>
 
-   <section className="phFooterCta"><div><h2>Ready to shape this building?</h2><p>Continue from site evidence into feasibility and editable architecture.</p></div><a href={`/projects/new/architecture?project=${projectId}`}>Open 2D Architecture <ArrowRight size={15}/></a></section>
-  </section>
- </main>;
+        <div className={styles.summary}>
+          <Summary label="Planning context" value={planningContext || 'Pending'} />
+          <Summary label="Coordinates" value={site?.lat != null && site?.lon != null ? `${site.lat}, ${site.lon}` : 'Not supplied'} />
+          <Summary label="Spatial evidence" value={evidenceReady ? 'Resolved' : 'Further review'} />
+          <Summary label="Regulatory status" value="Evidence-gated" />
+        </div>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}><div className={styles.sectionLabel}>COMPLETE WORKFLOW</div><h2>Everything You Need to Build Smarter</h2><p className={styles.intro}>Move from real site context to editable design and evidence-backed documentation.</p></div>
+          <div className={styles.workflow}>
+            {steps.map(([key, title, description, Icon, href, action], index) => (
+              <a className={styles.step} key={key} href={`${href}?project=${projectId}`}>
+                <div className={styles.stepIcon}><Icon size={23} /></div>
+                <div className={styles.stepNo}>{String(index + 1).padStart(2, '0')}</div>
+                <h3>{title}</h3><p>{description}</p>
+                <div className={styles.stepFoot}><span>{action}</span><ArrowRight size={14} /></div>
+              </a>
+            ))}
+          </div>
+
+          <div className={styles.proof}>
+            <div><strong>1</strong><span>Persistent Building Model</span></div>
+            <div><strong>{model?.rooms?.length ?? 0}</strong><span>Editable Spaces</span></div>
+            <div><strong>{siteArea !== null ? siteArea.toFixed(0) : '—'}</strong><span>Site Area m²</span></div>
+            <div><strong>{evidenceReady ? 'A/B' : 'Review'}</strong><span>Evidence Confidence</span></div>
+          </div>
+        </section>
+
+        <div className={styles.evidence}>
+          <div className={styles.evidenceText}><ShieldCheck size={19} /><div><strong>Evidence-aware regulatory workflow</strong><span>Build Ai never treats address heuristics as legal conclusions. Numeric controls activate only when the applicable authority, source and rule version are verified.</span></div></div>
+          <a className={styles.openStep} href={`/projects/new/site?project=${projectId}`}>Review site evidence <ArrowRight size={14} /></a>
+        </div>
+
+        <section className={styles.cta}><div><h2>Build from a verified foundation.</h2><p>Keep site context, geometry, compliance evidence and design decisions connected.</p></div><a href={`/projects/new/architecture?project=${projectId}`}>Open 2D Architecture <ArrowRight size={14} /></a></section>
+      </section>
+    </main>
+  );
 }
 
-function HouseLogo(){return <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M7 21.5 24 7l17 14.5V42H7V21.5Z" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/><path d="M17 42V26h14v16M21 20h6" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/></svg>;}
+function Metric({ label, value, text }: { label: string; value: string; text: string }) {
+  return <div className={styles.metric}><label>{label}</label><strong>{value}</strong><p>{text}</p></div>;
+}
+
+function Summary({ label, value }: { label: string; value: string }) {
+  return <div className={styles.summaryItem}><span>{label}</span><strong>{value}</strong></div>;
+}
+
+function HouseLogo() {
+  return <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M7 21.5 24 7l17 14.5V42H7V21.5Z" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/><path d="M17 42V26h14v16M21 20h6" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/></svg>;
+}
