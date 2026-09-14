@@ -5,7 +5,7 @@ function isFiniteNumber(value: unknown): value is number { return typeof value =
 function isValidModel(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== "object") return false;
   const model = value as Record<string, unknown>;
-  if (typeof model.modelId !== "string" || !Number.isInteger(model.version) || model.version < 1 || model.units !== "m") return false;
+  if (typeof model.modelId !== "string" || typeof model.version !== "number" || !Number.isInteger(model.version) || model.version < 1 || model.units !== "m") return false;
   const plot = model.plot as Record<string, unknown> | null;
   if (!plot || !isFiniteNumber(plot.width) || plot.width <= 0 || !isFiniteNumber(plot.depth) || plot.depth <= 0) return false;
   if (!Array.isArray(model.rooms) || model.rooms.length > 500) return false;
