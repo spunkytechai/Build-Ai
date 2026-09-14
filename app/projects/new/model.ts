@@ -12,3 +12,4 @@ export function boundaryViolations(model:BuildingModel){return model.rooms.filte
 export function validateModel(model:BuildingModel){const boundary=boundaryViolations(model);const overlap=hasOverlap(model.rooms);return{overlap,boundary,valid:!overlap&&boundary.length===0};}
 export function loadModel(fallback:BuildingModel){try{const raw=localStorage.getItem(MODEL_KEY);if(!raw)return fallback;const parsed=JSON.parse(raw) as BuildingModel;if(parsed?.plot?.width&&parsed?.plot?.depth&&Array.isArray(parsed.rooms))return{...parsed,rooms:parsed.rooms.map(r=>normalizeRoom(r,parsed.plot))};}catch{}return fallback;}
 export function saveModel(model:BuildingModel){try{localStorage.setItem(MODEL_KEY,JSON.stringify({...model,rooms:model.rooms.map(r=>normalizeRoom(r,model.plot))}));}catch{}}
+export function commitModel(current:BuildingModel,id:string,patch:Partial<Pick<Room,"x"|"y"|"w"|"h">>){const next=applyModelChange(current,id,patch);saveModel(next);return next;}
