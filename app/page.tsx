@@ -1,4 +1,7 @@
-import { ArrowRight, Box, CheckCircle2, FileText, LayoutGrid, MapPinned, Menu, PlayCircle, Ruler, ShieldCheck, Sparkles } from "lucide-react";
+'use client';
+
+import { ArrowRight, Box, CheckCircle2, FileText, LayoutGrid, MapPinned, Menu, PlayCircle, Ruler, ShieldCheck, Sparkles, X } from "lucide-react";
+import { useState } from "react";
 
 const workflow = [
   ["01", "Site Intelligence", "Understand your plot with real site data.", MapPinned],
@@ -16,11 +19,21 @@ const features = [
   [Box, "One Building Model", "One source of truth across the workflow."],
 ] as const;
 
+const mobileLinks = [
+  ["Workflow", "#workflow"],
+  ["Platform", "#platform"],
+  ["How It Works", "#how"],
+  ["Get Started", "/projects/new"],
+  ["Dashboard", "/dashboard"],
+] as const;
+
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <main className="landing">
       <header className="landingNav">
-        <a className="landingBrand" href="/" aria-label="Build Ai home">
+        <a className="landingBrand" href="/" aria-label="Build Ai home" onClick={() => setMenuOpen(false)}>
           <span className="houseMark" aria-hidden="true"><HouseLogo /></span>
           <span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span>
         </a>
@@ -28,8 +41,12 @@ export default function Home() {
           <a href="#workflow">Workflow</a><a href="#platform">Platform</a><a href="#how">How It Works</a><a href="#start">Pricing</a><a href="#start">Resources</a>
         </nav>
         <div className="navActions"><a className="signIn" href="/dashboard">Sign In</a><a className="navGetStarted" href="/projects/new">Get Started <ArrowRight size={15}/></a></div>
-        <button className="mobileMenu" aria-label="Open menu"><Menu size={25}/></button>
+        <button className="mobileMenu" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={25}/> : <Menu size={25}/>}</button>
       </header>
+
+      {menuOpen && <nav aria-label="Mobile navigation" style={{position:"absolute",top:70,right:12,left:12,zIndex:20,background:"#fff",border:"1px solid #dfe8f3",borderRadius:14,boxShadow:"0 16px 40px #173c6422",padding:10}}>
+        {mobileLinks.map(([label, href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 14px",borderRadius:9,fontSize:13,fontWeight:700,color:"#183556"}}>{label}<ArrowRight size={15}/></a>)}
+      </nav>}
 
       <section className="landingHero" id="how">
         <div className="heroContent">
