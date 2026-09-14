@@ -13,9 +13,8 @@ export default function NewProject() {
    const r=await fetch('/api/site-analysis',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({address,lat:lat?Number(lat):undefined,lon:lon?Number(lon):undefined,plotWidth:Number(width),plotDepth:Number(depth),buildingType:type})});
    const data=await r.json();
    if(!r.ok) throw new Error(data?.error || 'Site analysis failed');
-   if(data.jurisdiction==='Needs spatial resolution') throw new Error('Enter a Delhi or Gurugram address/coordinate so Build Ai can establish the initial planning context.');
    const id=crypto.randomUUID();
-   const project={id,name:name.trim()||'My Building Project',location:data.jurisdiction,type,updated:new Date().toLocaleDateString()};
+   const project={id,name:name.trim()||'My Building Project',location:data.jurisdiction||address||'India — authority pending',type,updated:new Date().toLocaleDateString()};
    const all=JSON.parse(localStorage.getItem('build-ai:projects:v1')||'[]');
    localStorage.setItem('build-ai:projects:v1',JSON.stringify([project,...all]));
    localStorage.setItem('build-ai:active-project:v1',id);
