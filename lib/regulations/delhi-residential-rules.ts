@@ -5,9 +5,8 @@ const SOURCE_CLAUSE = "Chapter 7, residential plotted development provisions; ex
 
 /**
  * Clause-verified controls from the official UBBL 2016 notification.
- * These are deliberately limited to controls whose numeric values and
- * conditions are visible in the published notification. They are not a
- * substitute for plot-specific sanction review.
+ * These remain evidence-backed rule candidates; they are not a substitute
+ * for plot-specific sanction review or later amendments.
  */
 export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
   {
@@ -17,7 +16,7 @@ export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
     ruleType: "height",
     value: 15,
     unit: "m",
-    condition: { parkingConfiguration: "no-stilt" },
+    condition: [{ field: "stiltParking", equals: false }],
     sourceDocument: SOURCE_DOCUMENT,
     sourceClause: SOURCE_CLAUSE + " Maximum height stated as 15 m for plots without stilt parking.",
     effectiveFrom: "2016-03-22",
@@ -30,7 +29,7 @@ export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
     ruleType: "height",
     value: 17.5,
     unit: "m",
-    condition: { parkingConfiguration: "stilt" },
+    condition: [{ field: "stiltParking", equals: true }],
     sourceDocument: SOURCE_DOCUMENT,
     sourceClause: SOURCE_CLAUSE + " Maximum height stated as 17.5 m for plots with stilt parking.",
     effectiveFrom: "2016-03-22",
@@ -43,7 +42,7 @@ export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
     ruleType: "parking",
     value: 2,
     unit: "ECS",
-    condition: { minPlotArea: 250, maxPlotArea: 300 },
+    condition: [{ field: "plotArea", min: 250, max: 300 }],
     sourceDocument: SOURCE_DOCUMENT,
     sourceClause: SOURCE_CLAUSE + " Parking: 2 Equivalent Car Spaces in plots of size 250–300 sq.m.",
     effectiveFrom: "2016-03-22",
@@ -56,9 +55,9 @@ export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
     ruleType: "parking",
     value: 1,
     unit: "ECS/100sqm-built-up-area",
-    condition: { minPlotAreaExclusive: 300, basis: "built-up-area" },
+    condition: [{ field: "plotArea", min: 300 }],
     sourceDocument: SOURCE_DOCUMENT,
-    sourceClause: SOURCE_CLAUSE + " Parking: 1 ECS for every 100 sq.m. built-up area in plots exceeding 300 sq.m., subject to the stated preceding-category exception.",
+    sourceClause: SOURCE_CLAUSE + " Parking: 1 ECS for every 100 sq.m. built-up area in plots exceeding 300 sq.m., subject to the stated preceding-category exception. Exact ECS calculation remains a later engine step.",
     effectiveFrom: "2016-03-22",
     verificationStatus: "verified",
   },
@@ -69,9 +68,9 @@ export const DELHI_RESIDENTIAL_RULES: RegulatoryRule[] = [
     ruleType: "setback",
     value: 2,
     unit: "m-courtyard-dimension",
-    condition: { minPlotArea: 50, maxPlotArea: 100, appliesTo: "future-construction" },
+    condition: [{ field: "plotArea", min: 50, max: 100 }],
     sourceDocument: SOURCE_DOCUMENT,
-    sourceClause: SOURCE_CLAUSE + " For future construction, a minimum 2 m x 2 m open courtyard is required in residential plots of 50–100 sq.m.",
+    sourceClause: SOURCE_CLAUSE + " For future construction, a minimum 2 m x 2 m open courtyard is required in residential plots of 50–100 sq.m.; future-construction applicability remains a review condition.",
     effectiveFrom: "2016-03-22",
     verificationStatus: "verified",
   },
