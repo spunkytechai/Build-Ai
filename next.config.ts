@@ -9,7 +9,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  typedRoutes: true,
+  typedRoutes: false,
   poweredByHeader: false,
   compress: true,
   async headers() {
