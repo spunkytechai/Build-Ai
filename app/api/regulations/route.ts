@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRegulationContext } from "@/app/lib/regulations";
+import { getRegulationContext } from "../../lib/regulations";
 
 export async function POST(req:Request){
  const body=await req.json();
