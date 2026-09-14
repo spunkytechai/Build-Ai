@@ -1,5 +1,13 @@
 export type RuleStatus = "PASS" | "FAIL" | "UNKNOWN";
 export type RuleType = "setback" | "coverage" | "far" | "height" | "parking";
+export type SetbackSide = "front" | "rear" | "side1" | "side2";
+
+export type Condition = {
+  field: keyof DesignFacts;
+  equals?: string | number | boolean;
+  min?: number;
+  max?: number;
+};
 
 export type RegulatoryRule = {
   id: string;
@@ -8,7 +16,8 @@ export type RegulatoryRule = {
   ruleType: RuleType;
   value?: number;
   unit?: string;
-  condition?: Record<string, unknown>;
+  condition?: Condition[];
+  side?: SetbackSide;
   sourceDocument: string;
   sourceClause: string;
   effectiveFrom?: string;
@@ -23,7 +32,13 @@ export type DesignFacts = {
   frontSetback?: number;
   rearSetback?: number;
   sideSetback?: number;
+  side1Setback?: number;
+  side2Setback?: number;
   parkingSpaces?: number;
+  plotWidth?: number;
+  plotDepth?: number;
+  stiltParking?: boolean;
+  buildingUse?: string;
 };
 
 export type RuleResult = {
@@ -44,9 +59,33 @@ function source(rule: RegulatoryRule) {
   };
 }
 
+function conditionsMatch(rule: RegulatoryRule, facts: DesignFacts): boolean {
+  if (!rule.condition?.length) return true;
+  return rule.condition.every(condition => {
+    const value = facts[condition.field];
+    if (value == null) return false;
+    if (condition.equals !== undefined && value !== condition.equals) return false;
+    if (condition.min !== undefined && (typeof value !== "number" || value < condition.min)) return false;
+    if (condition.max !== undefined && (typeof value !== "number" || value > condition.max)) return false;
+    return true;
+  });
+}
+
+function setbackValue(facts: DesignFacts, side?: SetbackSide): number | undefined {
+  if (side === "front") return facts.frontSetback;
+  if (side === "rear") return facts.rearSetback;
+  if (side === "side1") return facts.side1Setback ?? facts.sideSetback;
+  if (side === "side2") return facts.side2Setback ?? facts.sideSetback;
+  return facts.sideSetback;
+}
+
 export function evaluateRule(rule: RegulatoryRule, facts: DesignFacts): RuleResult {
   if (rule.verificationStatus !== "verified" || rule.value == null) {
     return { ruleId: rule.id, type: rule.ruleType, status: "UNKNOWN", message: "Applicable rule is not verified and activated.", source: source(rule) };
+  }
+
+  if (!conditionsMatch(rule, facts)) {
+    return { ruleId: rule.id, type: rule.ruleType, status: "UNKNOWN", message: "Rule applicability conditions are not satisfied by the supplied site/design facts.", source: source(rule) };
   }
 
   let status: RuleStatus = "UNKNOWN";
@@ -64,11 +103,10 @@ export function evaluateRule(rule: RegulatoryRule, facts: DesignFacts): RuleResu
     status = facts.proposedHeight <= rule.value ? "PASS" : "FAIL";
     message = `Proposed height ${facts.proposedHeight} m vs maximum ${rule.value} m.`;
   } else if (rule.ruleType === "setback") {
-    const sides = [facts.frontSetback, facts.rearSetback, facts.sideSetback];
-    if (sides.some(v => v != null)) {
-      const known = sides.filter((v): v is number => v != null);
-      status = known.every(v => v >= rule.value!) ? "PASS" : "FAIL";
-      message = `Minimum setback ${rule.value} m evaluated against supplied setbacks.`;
+    const supplied = setbackValue(facts, rule.side);
+    if (supplied != null) {
+      status = supplied >= rule.value ? "PASS" : "FAIL";
+      message = `${rule.side ?? "side"} setback ${supplied} m vs minimum ${rule.value} m.`;
     }
   } else if (rule.ruleType === "parking" && facts.parkingSpaces != null) {
     status = facts.parkingSpaces >= rule.value ? "PASS" : "FAIL";
