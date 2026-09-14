@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowRight, MapPinned, Ruler, LayoutDashboard, Box, Home, FileText } from 'lucide-react';
+import { ArrowRight, MapPinned, Ruler, LayoutDashboard, Box, Home, FileText, ShieldCheck } from 'lucide-react';
 
 type Project = { id:string; name:string; location:string; type:string; updated:string };
+type Site = { address?:string; lat?:number|null; lon?:number|null; width:number; depth:number; analysis?:any };
 const PROJECTS='build-ai:projects:v1';
 const MODEL='build-ai:building-model:v3';
 const steps = [
@@ -16,11 +17,14 @@ const steps = [
 ] as const;
 
 export default function ProjectPage({params}:{params:Promise<{id:string}>}) {
- const [project,setProject]=useState<Project|null>(null);
- useEffect(()=>{params.then(p=>{try{const all=JSON.parse(localStorage.getItem(PROJECTS)||'[]');const found=all.find((x:Project)=>x.id===p.id)||null;setProject(found);localStorage.setItem('build-ai:active-project:v1',p.id);}catch{}})},[params]);
+ const [project,setProject]=useState<Project|null>(null); const [site,setSite]=useState<Site|null>(null);
+ useEffect(()=>{params.then(p=>{try{const all=JSON.parse(localStorage.getItem(PROJECTS)||'[]');const found=all.find((x:Project)=>x.id===p.id)||null;setProject(found);setSite(JSON.parse(localStorage.getItem(`build-ai:site:${p.id}:v1`)||'null'));localStorage.setItem('build-ai:active-project:v1',p.id);}catch{}})},[params]);
  const model = typeof window!=='undefined' ? (()=>{try{return JSON.parse(localStorage.getItem(MODEL)||'null')}catch{return null}})() : null;
+ const analysis=site?.analysis;
  return <main className="workspace"><header><a href="/dashboard" className="brand">BUILD AI</a><span>Project Workspace</span><a href="/projects/new">New project</a></header>
-  <section className="panel"><p className="eyebrow">PROJECT</p><h1>{project?.name || 'Building project'}</h1><p className="muted">{project?.location || 'Location pending'} · {project?.type || 'Residential'}</p><div className="projectSummary"><div><span>Building model</span><strong>{model ? `v${model.version}` : 'Not started'}</strong></div><div><span>Rooms</span><strong>{model?.rooms?.length ?? 0}</strong></div><div><span>Regulatory status</span><strong>{model?.status === 'unresolved' ? 'Evidence required' : 'Ready'}</strong></div></div></section>
-  <section className="workflowCards">{steps.map(([key,title,desc,Icon,href],i)=><a key={key} href={href} className="workflowCard"><div className="stepNo">0{i+1}</div><Icon size={20}/><div><h2>{title}</h2><p>{desc}</p></div><ArrowRight size={17}/></a>)}</section>
+  <section className="panel"><p className="eyebrow">PROJECT</p><h1>{project?.name || 'Building project'}</h1><p className="muted">{project?.location || 'Location pending'} · {project?.type || 'Residential'}</p><div className="projectSummary"><div><span>Building model</span><strong>{model ? `v${model.version}` : 'Not started'}</strong></div><div><span>Rooms</span><strong>{model?.rooms?.length ?? 0}</strong></div><div><span>Site area</span><strong>{site ? `${(site.width*site.depth).toFixed(1)} m²` : 'Not resolved'}</strong></div><div><span>Spatial evidence</span><strong>{analysis && Object.keys(analysis.evidence||{}).length ? 'Resolved' : 'Further review'}</strong></div></div>
+   {site&&<div className="result"><div><span>Planning context</span><strong>{analysis?.planningSource || project?.location}</strong></div><div><span>Coordinates</span><strong>{site.lat!=null&&site.lon!=null ? `${site.lat}, ${site.lon}` : 'Not supplied'}</strong></div><div className="wide"><ShieldCheck size={16}/><span>Regulatory values remain evidence-gated; this workspace does not treat location heuristics as legal conclusions.</span></div></div>}
+  </section>
+  <section className="workflowCards">{steps.map(([key,title,desc,Icon,href],i)=><a key={key} href={`${href}?project=${project?.id||''}`} className="workflowCard"><div className="stepNo">0{i+1}</div><Icon size={20}/><div><h2>{title}</h2><p>{desc}</p></div><ArrowRight size={17}/></a>)}</section>
  </main>;
 }
