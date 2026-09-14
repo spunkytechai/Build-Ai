@@ -1,34 +1,76 @@
-import { ArrowRight, MapPinned, Sparkles, Box, Ruler, ShieldCheck } from "lucide-react";
+import { ArrowRight, Box, CheckCircle2, FileText, LayoutGrid, MapPinned, Menu, PlayCircle, Ruler, ShieldCheck, Sparkles } from "lucide-react";
 
-const steps = [
-  ["01", "Idea", "Describe what you want to build."],
-  ["02", "Site Intelligence", "Understand the land, jurisdiction and constraints."],
-  ["03", "Feasibility", "Calculate the buildable envelope."],
-  ["04", "Design", "Generate editable architectural concepts."],
-  ["05", "3D + Interior", "Turn the building model into a complete visual concept."],
-];
+const workflow = [
+  ["01", "Site Intelligence", "Understand your plot with real site data.", MapPinned],
+  ["02", "Feasibility", "Know what is possible before you design.", FileText],
+  ["03", "2D Architecture", "Generate intelligent, editable floor plans.", LayoutGrid],
+  ["04", "3D Model", "Visualize your building in real time.", Box],
+  ["05", "Interior", "Design beautiful living spaces.", Sparkles],
+  ["06", "Documents", "Prepare drawings and project reports.", FileText],
+] as const;
+
+const features = [
+  [MapPinned, "Site Intelligence", "Understand your property with real data."],
+  [ShieldCheck, "Regulation Ready", "Versioned rules with source provenance."],
+  [Ruler, "Deterministic Geometry", "The AI proposes; geometry verifies."],
+  [Box, "One Building Model", "One source of truth across the workflow."],
+] as const;
 
 export default function Home() {
   return (
-    <main>
-      <header className="topbar">
-        <div className="brand"><span className="brandMark">B</span><span>Build Ai</span></div>
-        <nav><a href="#workflow">Workflow</a><a href="#platform">Platform</a><a href="#start" className="navCta">Start a project <ArrowRight size={15}/></a></nav>
+    <main className="landing">
+      <header className="landingNav">
+        <a className="landingBrand" href="/" aria-label="Build Ai home">
+          <span className="houseMark" aria-hidden="true"><HouseLogo /></span>
+          <span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span>
+        </a>
+        <nav className="desktopNav" aria-label="Primary navigation">
+          <a href="#workflow">Workflow</a><a href="#platform">Platform</a><a href="#how">How It Works</a><a href="#start">Pricing</a><a href="#start">Resources</a>
+        </nav>
+        <div className="navActions"><a className="signIn" href="/dashboard">Sign In</a><a className="navGetStarted" href="/projects/new">Get Started <ArrowRight size={15}/></a></div>
+        <button className="mobileMenu" aria-label="Open menu"><Menu size={25}/></button>
       </header>
-      <section className="hero">
-        <div className="heroCopy">
-          <div className="eyebrow"><Sparkles size={14}/> BUILDING INTELLIGENCE PLATFORM</div>
-          <h1>From <em>idea</em> to a complete building.</h1>
-          <p>Build Ai connects site intelligence, Indian regulations, architecture, 3D design, interiors and the building model into one professional workflow.</p>
-          <div className="heroActions"><a className="primary" href="/projects/new">Start a project <ArrowRight size={17}/></a><a className="secondary" href="#workflow">See how it works</a></div>
+
+      <section className="landingHero" id="how">
+        <div className="heroContent">
+          <div className="heroEyebrow"><Sparkles size={14}/> YOUR PROPERTY. OUR INTELLIGENCE.</div>
+          <h1>From Plot to <span>Possibility</span></h1>
+          <p>AI-powered site analysis, design, regulatory compliance and documentation — all in one place.</p>
+          <div className="landingActions"><a className="landingPrimary" href="/projects/new">Get Started Free <ArrowRight size={18}/></a><a className="landingSecondary" href="#workflow"><PlayCircle size={17}/> Watch Demo</a></div>
+          <div className="benefits">
+            <Benefit icon="⚡" title="Faster Decisions"/><Benefit icon="◇" title="Regulation Ready"/><Benefit icon="◒" title="Smarter Designs"/>
+          </div>
         </div>
-        <div className="heroCard"><div className="cardTop"><span>PROJECT PREVIEW</span><span className="status">● Feasibility ready</span></div><div className="siteVisual"><div className="road"></div><div className="plot"><div className="buildable"><span>BUILDABLE ENVELOPE</span></div></div><div className="north">N ↑</div></div><div className="metrics"><div><small>Plot</small><strong>360 m²</strong></div><div><small>Buildable</small><strong>242 m²</strong></div><div><small>FAR</small><strong>Unresolved</strong></div><div><small>Confidence</small><strong>Evidence-aware</strong></div></div></div>
+        <div className="heroVisual" aria-label="Build Ai design preview">
+          <div className="skyGlow"/><div className="citySilhouette"/>
+          <div className="modernHome"><div className="homeRoof"/><div className="homeGlass"><i/><i/><i/><i/></div><div className="homeWood"><b/><b/><b/></div><div className="homePlants"><span/><span/><span/></div></div>
+          <div className="floatCard siteCard"><div className="cardThumb mapThumb"><MapPinned size={20}/></div><div><strong>Site Intelligence</strong><small><CheckCircle2/> Plot Analysis</small><small><CheckCircle2/> Zoning & Land Use</small><small><CheckCircle2/> Nearby Infrastructure</small><small><CheckCircle2/> Risk Assessment</small></div></div>
+          <div className="floatCard designCard"><strong>3D Design Preview</strong><div className="miniHouse"/></div>
+          <div className="floatCard complianceCard"><strong>Regulatory Compliance</strong><small><CheckCircle2/> DDA / UBBL</small><small><CheckCircle2/> TCP / GMDA</small><small><CheckCircle2/> Setbacks & FAR</small><small><CheckCircle2/> Parking Norms</small></div>
+        </div>
       </section>
-      <section id="platform" className="featureStrip"><Feature icon={<MapPinned/>} title="India-first site intelligence" text="Jurisdiction, planning and site constraints."/><Feature icon={<ShieldCheck/>} title="Regulation-aware" text="Versioned rules with source provenance."/><Feature icon={<Ruler/>} title="Deterministic geometry" text="The AI proposes; geometry verifies."/><Feature icon={<Box/>} title="One building model" text="2D, 3D, interior, exterior and BIM-ready."/></section>
-      <section id="workflow" className="workflow"><div className="sectionLabel">THE WORKFLOW</div><h2>One project. One source of truth.</h2><p className="sectionIntro">Build Ai is designed as a spatial reasoning system rather than an image generator.</p><div className="steps">{steps.map(([n,t,d]) => <div className="step" key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></div>)}</div></section>
-      <section id="start" className="start"><div><div className="sectionLabel">MVP v0.5</div><h2>Start with a real Indian site.</h2><p>The first production vertical is Idea → Site → Regulation → Feasibility → 2D → 3D, beginning with Delhi NCR residential projects.</p></div><a className="primary" href="/projects/new">Create project <ArrowRight size={17}/></a></section>
-      <footer><span>Build Ai</span><span>India-first building intelligence</span></footer>
+
+      <section className="featureStrip" id="platform">
+        {features.map(([Icon, title, text]) => <div className="feature" key={title}><div className="featureIcon"><Icon size={22}/></div><div><h3>{title}</h3><p>{text}</p></div></div>)}
+      </section>
+
+      <section className="workflow landingSection" id="workflow">
+        <div className="sectionLabel">COMPLETE WORKFLOW</div>
+        <h2>Everything You Need to<br className="wideBreak"/> Build Smarter</h2>
+        <p className="sectionIntro">From site analysis to approved documents, Build Ai simplifies the entire journey.</p>
+        <div className="workflowGrid">{workflow.map(([n, title, text, Icon]) => <div className="workflowCard" key={n}><div className="workflowIcon"><Icon size={24}/></div><div className="workflowNumber">{n}</div><h3>{title}</h3><p>{text}</p><ArrowRight className="workflowArrow" size={17}/></div>)}</div>
+      </section>
+
+      <section className="proofBand"><div><strong>10x</strong><span>Faster Planning</span></div><div><strong>100%</strong><span>Regulation Aware</span></div><div><strong>Cities</strong><span>Starting with Delhi NCR</span></div><div><strong>One Platform</strong><span>From Concept to Approval</span></div></section>
+
+      <section className="quoteSection"><blockquote>“Build Ai turns complex building rules<br className="wideBreak"/> into simple decisions.”</blockquote><p>— For Homeowners, Architects & Builders</p></section>
+
+      <section className="betterTomorrow" id="start"><div className="blueprint"><div className="blueprintHouse"><span/><span/><span/><span/></div></div><div className="ctaCopy"><div className="sectionLabel">THE FUTURE OF BUILDING</div><h2>Build a Better Tomorrow</h2><p>Smarter Sites. Compliant Designs. Greener Cities.</p><div className="landingActions"><a className="landingPrimary light" href="/projects/new">Get Started Free <ArrowRight size={18}/></a><a className="landingSecondary lightOutline" href="#how">Book a Demo</a></div></div></section>
+
+      <footer className="landingFooter"><div className="footerBrand"><span className="houseMark"><HouseLogo /></span><span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span></div><div className="footerLinks"><a href="#platform">Product</a><a href="#start">Solutions</a><a href="#start">Pricing</a><a href="#workflow">Resources</a><a href="#start">About</a><a href="#start">Contact</a></div><div className="footerSocial"><span>in</span><span>𝕏</span><span>◎</span><span>▶</span></div><p>Building a Smarter, Safer, Greener Tomorrow.</p></footer>
     </main>
   );
 }
-function Feature({icon,title,text}:{icon:React.ReactNode,title:string,text:string}) { return <div className="feature"><div className="featureIcon">{icon}</div><div><h3>{title}</h3><p>{text}</p></div></div>; }
+
+function Benefit({ icon, title }: { icon: string; title: string }) { return <div className="benefit"><b>{icon}</b><span>{title}</span></div>; }
+function HouseLogo() { return <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M7 21.5 24 7l17 14.5V42H7V21.5Z" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/><path d="M17 42V26h14v16M21 20h6" stroke="currentColor" strokeWidth="4" strokeLinejoin="round"/></svg>; }
