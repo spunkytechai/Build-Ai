@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 export default function SiteIntelligence() {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const type = params?.get("type") || "house";
+  const projectId = params?.get("projectId") || undefined;
+  const backHref = projectId ? `/projects/${encodeURIComponent(projectId)}` : "/projects/new";
   const [address, setAddress] = useState("");
   const [lat, setLat] = useState("");
   const [lon, setLon] = useState("");
@@ -24,7 +26,7 @@ export default function SiteIntelligence() {
   }
 
   return <main className="appShell">
-    <header className="workspaceTop"><Link href="/projects/new" className="back"><ArrowLeft size={17}/> Project</Link><span>Site Intelligence</span><span className="stepCount">02 / 05</span></header>
+    <header className="workspaceTop"><Link href={backHref} className="back"><ArrowLeft size={17}/> Project</Link><span>Site Intelligence</span><span className="stepCount">02 / 05</span></header>
     <section className="sitePage">
       <div className="sectionLabel">INDIA SITE INTELLIGENCE</div>
       <h1>Tell us where the building sits.</h1>
