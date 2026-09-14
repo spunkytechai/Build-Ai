@@ -7,6 +7,8 @@ export default function SiteIntelligence() {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const type = params?.get("type") || "house";
   const [address, setAddress] = useState("");
+  const [lat, setLat] = useState("");
+  const [lon, setLon] = useState("");
   const [plotWidth, setPlotWidth] = useState("12");
   const [plotDepth, setPlotDepth] = useState("20");
   const [result, setResult] = useState<any>(null);
@@ -15,8 +17,10 @@ export default function SiteIntelligence() {
 
   async function analyse() {
     setLoading(true); setResult(null);
-    const res = await fetch("/api/site-analysis", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ address, plotWidth: Number(plotWidth), plotDepth: Number(plotDepth), buildingType: type }) });
-    setResult(await res.json()); setLoading(false);
+    try {
+      const res = await fetch("/api/site-analysis", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ address, lat: lat ? Number(lat) : undefined, lon: lon ? Number(lon) : undefined, plotWidth: Number(plotWidth), plotDepth: Number(plotDepth), buildingType: type }) });
+      setResult(await res.json());
+    } finally { setLoading(false); }
   }
 
   return <main className="appShell">
@@ -24,14 +28,15 @@ export default function SiteIntelligence() {
     <section className="sitePage">
       <div className="sectionLabel">INDIA SITE INTELLIGENCE</div>
       <h1>Tell us where the building sits.</h1>
-      <p className="siteLead">Build Ai separates location evidence from regulatory assumptions. No rule is treated as authoritative until its source and version are verified.</p>
+      <p className="siteLead">Use coordinates for live spatial intersections. Address text is contextual only and never becomes a regulatory fact by itself.</p>
       <div className="siteGrid">
         <div className="siteForm">
-          <label>Address / locality<input value={address} onChange={e=>setAddress(e.target.value)} placeholder="e.g. sector, colony, city" /></label>
+          <label>Address / locality<input value={address} onChange={e=>setAddress(e.target.value)} placeholder="e.g. Sector 44, Gurugram" /></label>
+          <div className="two"><label>Latitude<input value={lat} onChange={e=>setLat(e.target.value)} placeholder="28.4595" inputMode="decimal" /></label><label>Longitude<input value={lon} onChange={e=>setLon(e.target.value)} placeholder="77.0266" inputMode="decimal" /></label></div>
           <div className="two"><label>Plot width (m)<input value={plotWidth} onChange={e=>setPlotWidth(e.target.value)} inputMode="decimal" /></label><label>Plot depth (m)<input value={plotDepth} onChange={e=>setPlotDepth(e.target.value)} inputMode="decimal" /></label></div>
           <div className="areaReadout"><span>Entered plot area</span><strong>{area.toFixed(1)} m²</strong></div>
-          <div className="uploadBox"><Upload size={18}/><div><strong>Survey / CAD / GIS</strong><small>Optional. Add later; user-supplied geometry is kept separate from government reference layers.</small></div></div>
-          <button className="analyse" onClick={analyse} disabled={loading || !address}>{loading ? "Resolving site…" : <><Search size={16}/> Analyse site</>}</button>
+          <div className="uploadBox"><Upload size={18}/><div><strong>Survey / CAD / GIS</strong><small>Optional. User-supplied geometry remains separate from government reference layers.</small></div></div>
+          <button className="analyse" onClick={analyse} disabled={loading || (!address && (!lat || !lon))}>{loading ? "Resolving site…" : <><Search size={16}/> Analyse site</>}</button>
         </div>
         <div className="sitePreview">
           <div className="mapHeader"><span><MapPinned size={15}/> Spatial context</span><span className="confidence">Evidence-aware</span></div>
@@ -39,9 +44,11 @@ export default function SiteIntelligence() {
           {result ? <div className="analysisResult">
             <div className="resultTitle"><ShieldCheck size={17}/> Site profile generated</div>
             <div className="resultRows"><Row k="Jurisdiction" v={result.jurisdiction} /><Row k="Planning source" v={result.planningSource} /><Row k="Plot" v={`${result.plotArea} m²`} /><Row k="Rule status" v={result.ruleStatus} /></div>
+            {result.coordinates && <div className="sourceNote">Coordinates: {result.coordinates.lat}, {result.coordinates.lon}</div>}
+            {result.evidence && Object.keys(result.evidence).length > 0 && <div className="sourceNote">Live GMDA spatial layers intersected: {Object.keys(result.evidence).join(", ")}</div>}
             <div className="sourceNote">{result.note}</div>
-            <div className="sources"><a href={result.sources.dda} target="_blank">DDA source <ExternalLink size={12}/></a><a href={result.sources.gmda} target="_blank">GMDA GIS <ExternalLink size={12}/></a></div>
-          </div> : <div className="emptyResult"><strong>Awaiting site</strong><span>Enter a location to create the first evidence-backed site profile.</span></div>}
+            <div className="sources"><a href={result.sources.dda} target="_blank" rel="noreferrer">DDA GIS <ExternalLink size={12}/></a><a href={result.sources.ddaPortal} target="_blank" rel="noreferrer">DDA Geo Portal <ExternalLink size={12}/></a><a href={result.sources.gmda} target="_blank" rel="noreferrer">GMDA GIS <ExternalLink size={12}/></a></div>
+          </div> : <div className="emptyResult"><strong>Awaiting site</strong><span>Enter an address or coordinates to create an evidence-backed site profile.</span></div>}
         </div>
       </div>
     </section>
