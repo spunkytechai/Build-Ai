@@ -11,12 +11,12 @@ type ModelSummary = { version?: number; rooms?: unknown[] };
 const heroImage = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85';
 const siteImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80';
 const steps = [
-  ['site', 'Site Intelligence', 'Resolve jurisdiction, planning context and site evidence.', MapPinned, '/projects/new/site', 'Understand your property'],
-  ['feasibility', 'Feasibility', 'Evaluate the buildable envelope and regulatory evidence.', Ruler, '/projects/new/envelope', 'Know what is possible'],
-  ['design', '2D Architecture', 'Edit the persistent floor-plan geometry.', LayoutDashboard, '/projects/new/architecture', 'Create intelligent plans'],
-  ['3d', '3D Model', 'Inspect the same building model in 3D.', Box, '/projects/new/3d', 'Visualize your building'],
-  ['interior', 'Interior', 'Develop rooms, furniture and finishes.', Home, '/projects/new/interior', 'Shape living spaces'],
-  ['documents', 'Documents', 'Generate evidence-backed project documentation.', FileText, '/projects/new/documents', 'Prepare project reports'],
+  ['site', 'Site Intelligence', 'Resolve jurisdiction, planning context and site evidence.', MapPinned, 'Understand your property'],
+  ['feasibility', 'Feasibility', 'Evaluate the buildable envelope and regulatory evidence.', Ruler, 'Know what is possible'],
+  ['architecture', '2D Architecture', 'Edit the persistent floor-plan geometry.', LayoutDashboard, 'Create intelligent plans'],
+  ['3d', '3D Model', 'Inspect the same building model in 3D.', Box, 'Visualize your building'],
+  ['interior', 'Interior', 'Develop rooms, furniture and finishes.', Home, 'Shape living spaces'],
+  ['documents', 'Documents', 'Generate evidence-backed project documentation.', FileText, 'Prepare project reports'],
 ] as const;
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
@@ -55,14 +55,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   if (!project) return <main className={styles.page}><section className={styles.body}><div className={styles.empty}><h1>Project not found</h1><p>This project may not be accessible to your account.</p><a href="/dashboard">Return to dashboard</a></div></section></main>;
 
   const projectId = project.id;
-  const workflowHref = (href: string) => `${href}?projectId=${encodeURIComponent(projectId)}`;
+  const workflowHref = (stage: string) => `/projects/${projectId}/${stage}`;
   const planningContext = site?.jurisdiction || site?.authority || 'Pending site resolution';
   const hasCoordinates = site?.latitude != null && site?.longitude != null;
 
   return <main className={styles.page}>
     <header className={styles.nav}>
       <a href="/dashboard" className={styles.brand} aria-label="Build Ai dashboard"><HouseLogo/><span><strong>Build Ai</strong><small>Plan · Design · Approve · Build</small></span></a>
-      <nav className={styles.navLinks} aria-label="Project navigation"><a href={`/projects/${projectId}`}>Project</a><a href={workflowHref('/projects/new/site')}>Site</a><a href={workflowHref('/projects/new/envelope')}>Feasibility</a><a href={workflowHref('/projects/new/architecture')}>2D</a><a href={workflowHref('/projects/new/3d')}>3D</a><a href={workflowHref('/projects/new/interior')}>Interior</a></nav>
+      <nav className={styles.navLinks} aria-label="Project navigation"><a href={`/projects/${projectId}`}>Project</a>{steps.slice(0,5).map(([key,title])=><a key={key} href={workflowHref(key)}>{title === '2D Architecture' ? '2D' : title}</a>)}</nav>
       <div className={styles.navActions}><a className={styles.back} href="/dashboard">Dashboard</a><a className={styles.newProject} href="/projects/new">New Project</a></div>
     </header>
     <section className={styles.body}>
@@ -72,9 +72,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         <div className={styles.metrics}><Metric label="Building model" value={model?.version ? `v${model.version}` : 'Not started'} text="Persistent source of truth across 2D and 3D."/><Metric label="Rooms" value={String(model?.rooms?.length ?? 0)} text="Editable spaces in the current model."/><Metric label="Site area" value="From site" text={site ? 'Plot dimensions are stored with the project.' : 'Add site dimensions'}/><Metric label="Evidence" value={site?.jurisdiction || site?.authority ? 'Resolved' : 'Review'} text="Regulatory values remain evidence-gated."/><div className={styles.sitePreview}><img src={siteImage} alt="Residential site and landscape context" loading="lazy" onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }}/><div className={styles.siteLabel}><MapPinned size={13}/> Site Context</div></div></div>
       </div>
       <div className={styles.summary}><Summary label="Planning context" value={planningContext}/><Summary label="Coordinates" value={hasCoordinates ? `${site!.latitude}, ${site!.longitude}` : 'Not supplied'}/><Summary label="Authority" value={site?.authority || 'Pending'}/><Summary label="Regulatory status" value="Evidence-gated"/></div>
-      <section className={styles.section}><div className={styles.sectionHead}><div className={styles.sectionLabel}>COMPLETE WORKFLOW</div><h2>Everything You Need to Build Smarter</h2><p className={styles.intro}>Move from real site context to editable design and evidence-backed documentation.</p></div><div className={styles.workflow}>{steps.map(([key,title,description,Icon,href,action],index)=><a className={styles.step} key={key} href={workflowHref(href)}><div className={styles.stepIcon}><Icon size={23}/></div><div className={styles.stepNo}>{String(index+1).padStart(2,'0')}</div><h3>{title}</h3><p>{description}</p><div className={styles.stepFoot}><span>{action}</span><ArrowRight size={14}/></div></a>)}</div><div className={styles.proof}><div><strong>1</strong><span>Persistent Building Model</span></div><div><strong>{model?.rooms?.length ?? 0}</strong><span>Editable Spaces</span></div><div><strong>{hasCoordinates ? 'GIS' : '—'}</strong><span>Site Context</span></div><div><strong>{site?.jurisdiction || site?.authority ? 'A/B' : 'Review'}</strong><span>Evidence Confidence</span></div></div></section>
-      <div className={styles.evidence}><div className={styles.evidenceText}><ShieldCheck size={19}/><div><strong>Evidence-aware regulatory workflow</strong><span>Build Ai never treats address heuristics as legal conclusions. Numeric controls activate only when the applicable authority, source and rule version are verified.</span></div></div><a className={styles.openStep} href={workflowHref('/projects/new/site')}>Review site evidence <ArrowRight size={14}/></a></div>
-      <section className={styles.cta}><div><h2>Build from a verified foundation.</h2><p>Keep site context, geometry, compliance evidence and design decisions connected.</p></div><a href={workflowHref('/projects/new/architecture')}>Open 2D Architecture <ArrowRight size={14}/></a></section>
+      <section className={styles.section}><div className={styles.sectionHead}><div className={styles.sectionLabel}>COMPLETE WORKFLOW</div><h2>Everything You Need to Build Smarter</h2><p className={styles.intro}>Move from real site context to editable design and evidence-backed documentation.</p></div><div className={styles.workflow}>{steps.map(([key,title,description,Icon,action],index)=><a className={styles.step} key={key} href={workflowHref(key)}><div className={styles.stepIcon}><Icon size={23}/></div><div className={styles.stepNo}>{String(index+1).padStart(2,'0')}</div><h3>{title}</h3><p>{description}</p><div className={styles.stepFoot}><span>{action}</span><ArrowRight size={14}/></div></a>)}</div><div className={styles.proof}><div><strong>1</strong><span>Persistent Building Model</span></div><div><strong>{model?.rooms?.length ?? 0}</strong><span>Editable Spaces</span></div><div><strong>{hasCoordinates ? 'GIS' : '—'}</strong><span>Site Context</span></div><div><strong>{site?.jurisdiction || site?.authority ? 'A/B' : 'Review'}</strong><span>Evidence Confidence</span></div></div></section>
+      <div className={styles.evidence}><div className={styles.evidenceText}><ShieldCheck size={19}/><div><strong>Evidence-aware regulatory workflow</strong><span>Build Ai never treats address heuristics as legal conclusions. Numeric controls activate only when the applicable authority, source and rule version are verified.</span></div></div><a className={styles.openStep} href={workflowHref('site')}>Review site evidence <ArrowRight size={14}/></a></div>
+      <section className={styles.cta}><div><h2>Build from a verified foundation.</h2><p>Keep site context, geometry, compliance evidence and design decisions connected.</p></div><a href={workflowHref('architecture')}>Open 2D Architecture <ArrowRight size={14}/></a></section>
     </section>
   </main>;
 }
