@@ -73,6 +73,7 @@ export default function StagePage({ params }: { params: Promise<{ id: string; st
   const site = project.sites?.[0];
   const dimensions = site?.plot_width_m && site?.plot_depth_m ? `${site.plot_width_m} × ${site.plot_depth_m} m` : 'Not resolved';
   const rooms = Array.isArray(model?.model?.rooms) ? model.model.rooms : [];
+  const currentProject = project;
 
   async function generatePackage() {
     if (generating) return;
@@ -81,7 +82,7 @@ export default function StagePage({ params }: { params: Promise<{ id: string; st
     const nextPackage: Package = {
       schema: 'build-ai.project-package.v1',
       generatedAt: new Date().toISOString(),
-      project: { id: project.id, name: project.name, description: project.description ?? null, status: project.status ?? null },
+      project: { id: currentProject.id, name: currentProject.name, description: currentProject.description ?? null, status: currentProject.status ?? null },
       site: {
         address: site?.address ?? null,
         latitude: site?.latitude ?? null,
@@ -108,27 +109,27 @@ export default function StagePage({ params }: { params: Promise<{ id: string; st
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'build-ai-project'}-package.json`;
+    anchor.download = `${currentProject.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'build-ai-project'}-package.json`;
     anchor.click();
     URL.revokeObjectURL(url);
     setGenerated(true);
     setGenerating(false);
   }
 
-  if (pathStage === 'documents') return <DocumentsView project={project} site={site} model={model} packageData={packageData} generated={generated} generating={generating} onGenerate={generatePackage} />;
+  if (pathStage === 'documents') return <DocumentsView project={currentProject} site={site} model={model} packageData={packageData} generated={generated} generating={generating} onGenerate={generatePackage} />;
 
   return <main style={shell}>
-    <header style={header}><a href={`/projects/${project.id}`} style={brand}>Build Ai</a><nav style={{display:'flex',gap:16,flexWrap:'wrap'}}>{(Object.keys(STAGES) as Stage[]).map(key => <a key={key} href={`/projects/${project.id}/${key}`} style={{...navLink, fontWeight:key===pathStage?800:600}}>{STAGES[key].title}</a>)}</nav><a href="/dashboard" style={navLink}>Dashboard</a></header>
+    <header style={header}><a href={`/projects/${currentProject.id}`} style={brand}>Build Ai</a><nav style={{display:'flex',gap:16,flexWrap:'wrap'}}>{(Object.keys(STAGES) as Stage[]).map(key => <a key={key} href={`/projects/${currentProject.id}/${key}`} style={{...navLink, fontWeight:key===pathStage?800:600}}>{STAGES[key].title}</a>)}</nav><a href="/dashboard" style={navLink}>Dashboard</a></header>
     <section style={content}>
-      <a href={`/projects/${project.id}`} style={back}><ArrowLeft size={15}/> Project workspace</a>
+      <a href={`/projects/${currentProject.id}`} style={back}><ArrowLeft size={15}/> Project workspace</a>
       <div style={eyebrow}><Sparkles size={14}/> WORKFLOW STAGE</div>
-      <div style={titleRow}><div><h1 style={{margin:'6px 0 8px'}}>{config.title}</h1><p style={muted}>{config.description}</p></div><div style={stageBadge}><Icon size={18}/><span>{project.name}</span></div></div>
+      <div style={titleRow}><div><h1 style={{margin:'6px 0 8px'}}>{config.title}</h1><p style={muted}>{config.description}</p></div><div style={stageBadge}><Icon size={18}/><span>{currentProject.name}</span></div></div>
       <div style={grid}>
         <article style={card}><div style={cardIcon}><Icon size={21}/></div><h2>Current foundation</h2><p>{site?.jurisdiction || site?.authority || 'Site evidence pending'} · {dimensions}</p><div style={rows}><Row label="Site" value={site?.address || 'Not supplied'} /><Row label="Authority" value={site?.authority || 'Pending'} /><Row label="Coordinates" value={site?.latitude != null && site?.longitude != null ? `${site.latitude}, ${site.longitude}` : 'Not supplied'} /><Row label="Building type" value={site?.building_type || 'Not specified'} /></div></article>
         <article style={card}><div style={cardIcon}><ShieldCheck size={21}/></div><h2>Evidence state</h2><p>AI suggestions remain separate from verified regulatory controls.</p><div style={rows}><Row label="Planning context" value={site?.jurisdiction || 'Review required'} /><Row label="Regulatory controls" value="Evidence-gated" /><Row label="Model version" value={model?.version ? `v${model.version}` : 'Not started'} /><Row label="Editable spaces" value={String(rooms.length)} /></div></article>
       </div>
       <section style={notice}><ShieldCheck size={20}/><div><strong>Production workflow safeguard</strong><p>This stage is connected to the persistent project state, but no unsupported regulatory or design conclusion is presented as verified. Deterministic engines remain the source of truth.</p></div></section>
-      <div style={actions}><a href={`/projects/${project.id}`} style={secondary}><ArrowLeft size={15}/> Back to project</a><a href={`/projects/${project.id}/${config.next}`} style={primary}>Continue to {STAGES[config.next].title} <ArrowRight size={15}/></a></div>
+      <div style={actions}><a href={`/projects/${currentProject.id}`} style={secondary}><ArrowLeft size={15}/> Back to project</a><a href={`/projects/${currentProject.id}/${config.next}`} style={primary}>Continue to {STAGES[config.next].title} <ArrowRight size={15}/></a></div>
     </section>
   </main>;
 }
