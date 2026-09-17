@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./landing.css";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://build-ai-lime-theta.vercel.app";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
   title: {
     default: "Build Ai — From Idea to Building",
     template: "%s · Build Ai",
