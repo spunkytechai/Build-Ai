@@ -1,5 +1,7 @@
 # Build Ai
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+
 From idea to complete building.
 
 Build Ai is an India-first AEC / PropTech building intelligence platform. The current MVP targets residential projects in Delhi + Gurugram, starting with rectangular plots and G+0 to G+3.
@@ -34,3 +36,7 @@ npm run dev
 GitHub → Vercel → Production
 
 Future backend: PostgreSQL/PostGIS, versioned India Data Core, deterministic regulation engine, background GIS/geometry workers, and persistent building-model storage.
+
+## License
+
+Build Ai is licensed under the [Apache License 2.0](LICENSE).
