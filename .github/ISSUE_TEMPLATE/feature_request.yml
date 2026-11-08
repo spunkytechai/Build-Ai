@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose an improvement to the building intelligence workflow.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Describe the workflow or decision that is difficult today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and regulatory implications
+      description: Identify data sources, jurisdictions, assumptions, and what must remain unresolved pending verification.
+    validations:
+      required: false
+  - type: checkboxes
+    id: safeguards
+    attributes:
+      label: Safeguards
+      options:
+        - label: I have considered privacy and sensitive property data.
+        - label: I have considered how the proposal avoids fabricating regulatory or compliance values.
